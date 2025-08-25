@@ -38,7 +38,7 @@ INSTALLED_APPS = [
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
-    'django.contrib.staticfiles',
+    'django.contrib.staticfiles','dashboard',
 ]
 
 MIDDLEWARE = [
@@ -51,6 +51,11 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
+REST_FRAMEWORK = {
+    "DEFAULT_AUTHENTICATION_CLASSES" :["rest_framework.authentication.SessionAuthentication",
+                                       "rest_framework.authentication.BasicAuthentication"],
+
+}
 ROOT_URLCONF = 'backend.urls'
 
 TEMPLATES = [
