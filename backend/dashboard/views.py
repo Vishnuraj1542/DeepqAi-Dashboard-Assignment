@@ -22,12 +22,16 @@ class LoginView(APIView):
     def post(self,request):
         username = request.data.get('username')
         password = request.data.get('password')
+        
 
         if not User.objects.filter(username=username).exists():
             return Response({'message':'username not found please register'},status = status.HTTP_404_NOT_FOUND)
+        print('user is present')
         user = authenticate(request,username=username,password=password)
         if user is not None:
             login(request,user)
+            print ("HIIII",request.user)
+            
             return Response({'message':'login successful'},status= status.HTTP_200_OK)
         return Response({'message':'invalid credentials'},status = status.HTTP_401_UNAUTHORIZED)
     
@@ -55,6 +59,16 @@ class IndicatorListView(generics.ListAPIView):
             queryset = queryset.filter(indicator__icontains=indicator)
 
         return queryset
+
+class FetchUserView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request):
+        user = request.user
+        return Response({
+            "id": user.id,
+            "username": user.username
+        })
 
 
 class FetchWorldBankData(APIView):
