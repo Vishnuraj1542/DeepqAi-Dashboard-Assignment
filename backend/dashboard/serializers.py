@@ -6,11 +6,6 @@ class IndicatorSerializer(serializers.ModelSerializer):
         model = Indicator
         fields = '__all__'
 
-class UserSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = User
-        fields = '__all__'
-
 class RegistrationSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True)
     class Meta:

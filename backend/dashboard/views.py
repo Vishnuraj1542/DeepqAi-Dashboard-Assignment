@@ -1,9 +1,7 @@
 from django.contrib.auth import authenticate,login,logout
-from django.http import JsonResponse
-from django.contrib.auth.decorators import login_required
 from rest_framework import generics, permissions,status
 from .models import Indicator,User
-from .serializers import IndicatorSerializer,UserSerializer,RegistrationSerializer
+from .serializers import IndicatorSerializer,RegistrationSerializer
 from rest_framework.views import APIView
 from rest_framework.response import Response
 import requests
@@ -26,12 +24,12 @@ class LoginView(APIView):
         password = request.data.get('password')
 
         if not User.objects.filter(username=username).exists():
-            return Response({'error':'username not found please register'},status = status.HTTP_404_NOT_FOUND)
+            return Response({'message':'username not found please register'},status = status.HTTP_404_NOT_FOUND)
         user = authenticate(request,username=username,password=password)
         if user is not None:
             login(request,user)
             return Response({'message':'login successful'},status= status.HTTP_200_OK)
-        return Response({'error':'invalid credentials'},status = status.HTTP_401_UNAUTHORIZED)
+        return Response({'message':'invalid credentials'},status = status.HTTP_401_UNAUTHORIZED)
     
 class LogoutView(APIView):
     permission_classes = [permissions.IsAuthenticated]
@@ -39,20 +37,25 @@ class LogoutView(APIView):
         logout(request)
         return Response({'message':'logout sucessful'},status=status.HTTP_200_OK)
 
-class UserListView(generics.ListAPIView):
-    queryset = User.objects.all()
-    serializer_class = UserSerializer
-    permission_classes = [permissions.AllowAny]
-
-class IndicatorListCreateView(generics.ListAPIView):
-    queryset = Indicator.objects.all()
+class IndicatorListView(generics.ListAPIView):
     serializer_class = IndicatorSerializer
     permission_classes = [permissions.IsAuthenticated]
 
-class IndicatorDetailView(generics.ListAPIView):
-    queryset = Indicator.objects.all()
-    serializer_class = IndicatorSerializer
-    permission_classes = [permissions.IsAuthenticated]
+    def get_queryset(self):
+        queryset = Indicator.objects.all().order_by("-year")
+        year_min = self.request.query_params.get("year_min")
+        year_max = self.request.query_params.get("year_max")
+        indicator = self.request.query_params.get("indicator")
+
+        if year_min:
+            queryset = queryset.filter(year__gte=year_min)
+        if year_max:
+            queryset = queryset.filter(year__lte=year_max)
+        if indicator:
+            queryset = queryset.filter(indicator__icontains=indicator)
+
+        return queryset
+
 
 class FetchWorldBankData(APIView):
     permission_classes = [permissions.IsAdminUser]
