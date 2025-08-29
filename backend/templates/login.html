@@ -1,0 +1,18 @@
+
+<div class="login-container">
+    <h2>Login</h2>
+    <form method="post">
+        {% csrf_token %}
+        <input type="text" placeholder="username" name="username">
+        <input type="password" placeholder="password" name="password">
+
+        <button href="{% url 'login-user'%}" type="submit">Login</button>
+        
+        {% if messages %}
+        {% for message in messages %}
+        <p>{{message}}</p>
+        
+        {% endfor %}
+        {% endif %}
+    </form>
+</div>

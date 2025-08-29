@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Dashboard{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h2>{{ data_type|capfirst }} Data Chart</h2>
+
+    <form method="get" action="{% url 'dashboard-view' %}" class="mb-3">
+        <label for="year">Enter Year:</label>
+        <input type="number" name="year" id="year" value="{{ year|default:'' }}" placeholder="e.g., 2020">
+        <button type="submit" class="btn btn-primary">Filter</button>
+        {% if year %}
+            <a href="{% url 'dashboard-view' %}" class="btn btn-secondary">Reset</a>
+        {% endif %}
+    </form>
+
+    <canvas id="myChart" width="600" height="300"></canvas>
+</div>
+
+{{ chart_data|json_script:"chart-data" }}
+
+<script>
+    let chartData = JSON.parse(document.getElementById("chart-data").textContent);
+
+    if (!Array.isArray(chartData)) {
+        chartData = [chartData];
+    }
+
+    let labels = chartData.map(d => d.year);
+    let values = chartData.map(d => Number(d.value));
+
+    const ctx = document.getElementById('myChart').getContext('2d');
+    new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: labels,
+            datasets: [
+                {
+                    type: 'bar',
+                    label: '{{ data_type|capfirst }} (Bar)',
+                    data: values,
+                    backgroundColor: 'rgba(54, 162, 235, 0.5)',
+                    borderColor: 'rgba(54, 162, 235, 1)',
+                    borderWidth: 1
+                },
+                {
+                    type: 'line',
+                    label: '{{ data_type|capfirst }} (Line)',
+                    data: values,
+                    borderColor: 'rgba(255, 99, 132, 1)',
+                    backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                    tension: 0.3,
+                    fill: false,
+                    pointRadius: 5,
+                    pointHoverRadius: 7
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: { position: 'top' },
+                title: { display: true, text: '{{ data_type|capfirst }} over Years (Bar + Line)' }
+            },
+            scales: {
+                y: { beginAtZero: true }
+            }
+        }
+    });
+</script>
+
+{% endblock %}
